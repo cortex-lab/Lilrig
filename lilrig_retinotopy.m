@@ -331,7 +331,7 @@ subplot(1,2,2,ax2);
 subplot(1,2,2,ax3);
 h1 = imagesc(ax2,avg_im(use_u_y,:));
 colormap(ax2,gray);
-caxis(ax2,[0 prctile(avg_im(:),99.9)]);
+caxis(ax2,[0 prctile(avg_im(:),95)]);
 h2 = imagesc(ax3,vfs_median);
 colormap(ax3,colormap_BlueWhiteRed);
 caxis([-1,1]);
