@@ -1,6 +1,8 @@
 # Lilrig
 code specific to Lilrig
 
+dependencies: [widefield repository](https://github.com/cortex-lab/widefield/)
+
 # Load data from lilrig
 ```animal = 'animal_name';```
 
