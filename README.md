@@ -16,3 +16,6 @@ dependencies: [widefield repository](https://github.com/cortex-lab/widefield/)
 After loading data: 
 
 ```lilrig_retinotopy```
+
+# Troubleshooting
+- if timestamps are not saved after preprocessing, troubleshoot with the script AP_parse_temporal_component_fix
