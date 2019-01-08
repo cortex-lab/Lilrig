@@ -119,7 +119,6 @@ for curr_exp_idx = 1:length(experiments)
     V_blue{curr_exp_idx} = readNPY(V_blue_fn);
     V_purple{curr_exp_idx} = readNPY(V_purple_fn);
 
-    AP_print_progress_fraction(curr_exp_idx,length(experiments));
 end
 
 % Checks
