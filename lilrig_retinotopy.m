@@ -24,6 +24,7 @@ switch stim_program
         
         [Uy,Ux,nSV] = size(U);
         
+        % Generate the sparse noise stimuli from the protocol
         myScreenInfo.windowPtr = NaN; % so we can call the stimulus generation and it won't try to display anything
         stimNum = 1;
         ss = eval([Protocol.xfile(1:end-2) '(myScreenInfo, Protocol.pars(:,stimNum));']);
@@ -31,7 +32,7 @@ switch stim_program
         ny = size(stim_screen,1);
         nx = size(stim_screen,2);
         
-        % This is garbage: higher threshold for this photodiode flip on flicker
+        % Threshold the photodiode trace, find flips
         photodiode_thresh = 4;
         photodiode_trace = Timeline.rawDAQData(stimScreen_on,photodiode_idx) > photodiode_thresh;
         % (medfilt because photodiode can be intermediate value when backlight
@@ -40,13 +41,7 @@ switch stim_program
             photodiode_idx),1) > photodiode_thresh;
         photodiode_flip = find((~photodiode_trace_medfilt(1:end-1) & photodiode_trace_medfilt(2:end)) | ...
             (photodiode_trace_medfilt(1:end-1) & ~photodiode_trace_medfilt(2:end)))+1;
-        photodiode_flip_times = stimScreen_on_t(photodiode_flip)';
-        
-        if strcmp(photodiode_type,'flicker') && length(photodiode_flip_times) ~= size(stim_screen,3)
-            warning('Mismatching stim times (threshold?): interpolating start/end');
-            photodiode_flip_times = photodiode_flip_times([1,end]);
-            photodiode_type = 'steady';
-        end
+        photodiode_flip_times = stimScreen_on_t(photodiode_flip)';       
         
         switch lower(photodiode_type)
             case 'flicker'
@@ -55,29 +50,38 @@ switch stim_program
                 if mod(size(stim_screen,3),2) == 1 && ...
                         length(photodiode_flip_times) == size(stim_screen,3) + 1
                     photodiode_flip_times(end) = [];
+                    stim_times = photodiode_flip_times;
                     warning('Odd number of stimuli, removed last photodiode');
-                end
-                
-                % If there's still a mismatch, attempt to fix
-                if size(stim_screen,3) ~= length(photodiode_flip_times)
-                    warning([num2str(size(stim_screen,3)) ' stimuli, ', ...
-                        num2str(length(photodiode_flip_times)) ' photodiode pulses']);
                     
-                    % Try to estimate which stim were missed by time difference
-                    photodiode_diff = diff(photodiode_flip_times);
-                    max_regular_diff_time = prctile(diff(photodiode_flip_times),99);
-                    skip_cutoff = max_regular_diff_time*2;
-                    photodiode_skip = find(photodiode_diff > skip_cutoff);
-                    est_n_pulse_skip = ceil(photodiode_diff(photodiode_skip)/max_regular_diff_time)-1;
-                    stim_skip = cell2mat(arrayfun(@(x) photodiode_skip(x):photodiode_skip(x)+est_n_pulse_skip(x)-1, ...
-                        1:length(photodiode_skip),'uni',false));
-                    
-                    if isempty(est_n_pulse_skip) || length(photodiode_flip_times) + sum(est_n_pulse_skip) ~= size(stim_screen,3)
-                        error('Can''t match photodiode events to stimuli')
-                    end
-                end
+                % If there's a different kind of mismatch, guess stim times
+                % by interpolation
+                elseif size(stim_screen,3) ~= length(photodiode_flip_times)
+                    photodiode_flip_times = photodiode_flip_times([1,end]);
+                    stim_duration = diff(photodiode_flip_times)/size(stim_screen,3);
+                    stim_times = linspace(photodiode_flip_times(1), ...
+                        photodiode_flip_times(2)-stim_duration,size(stim_screen,3))';
+                end                                         
                 
-                stim_times = photodiode_flip_times;
+                % (this was a started attempt to fix dropped frames, hasn't
+                % happened in a long time so not finished)
+%                 if size(stim_screen,3) ~= length(photodiode_flip_times)
+%                     warning([num2str(size(stim_screen,3)) ' stimuli, ', ...
+%                         num2str(length(photodiode_flip_times)) ' photodiode pulses']);
+%                     
+%                     % Try to estimate which stim were missed by time difference
+%                     photodiode_diff = diff(photodiode_flip_times);
+%                     max_regular_diff_time = prctile(diff(photodiode_flip_times),99);
+%                     skip_cutoff = max_regular_diff_time*2;
+%                     photodiode_skip = find(photodiode_diff > skip_cutoff);
+%                     est_n_pulse_skip = ceil(photodiode_diff(photodiode_skip)/max_regular_diff_time)-1;
+%                     stim_skip = cell2mat(arrayfun(@(x) photodiode_skip(x):photodiode_skip(x)+est_n_pulse_skip(x)-1, ...
+%                         1:length(photodiode_skip),'uni',false));
+%                     
+%                     % Interpolate stim times from start/end
+%                     if isempty(est_n_pulse_skip) || length(photodiode_flip_times) + sum(est_n_pulse_skip) ~= size(stim_screen,3)
+%                         error('Can''t match photodiode events to stimuli, trying interpolation')                                           
+%                     end
+%                 end             
                 
             case 'steady'
                 % If the photodiode is on steady: extrapolate the stim times
