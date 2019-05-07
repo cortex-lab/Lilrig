@@ -4,6 +4,8 @@ code specific to Lilrig
 dependencies: 
 * [widefield repository](https://github.com/cortex-lab/widefield/)
 * [npy-matlab repository](https://github.com/kwikteam/npy-matlab)
+* zserver\Code\Stimulus (ancient mpep code)
+* zserver\Data\xfiles (ancient mpep code)
 
 # Load data from lilrig
 ```animal = 'animal_name';```
