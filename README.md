@@ -1,7 +1,9 @@
 # Lilrig
 code specific to Lilrig
 
-dependencies: [widefield repository](https://github.com/cortex-lab/widefield/)
+dependencies: 
+* [widefield repository](https://github.com/cortex-lab/widefield/)
+* [npy-matlab repository](https://github.com/kwikteam/npy-matlab)
 
 # Load data from lilrig
 ```animal = 'animal_name';```
