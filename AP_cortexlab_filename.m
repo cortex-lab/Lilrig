@@ -87,7 +87,7 @@ switch file
             filesep day '_' experiment '_' animal '_Timeline.mat'];
         % CHECK SERVER2 IF IT DOESN'T EXIST
         if ~exist(filename,'file')
-            filepath = [server2 filesep 'Subjects'];
+            filepath = [server1 filesep 'Data' filesep 'Subjects'];
             filename = [filepath filesep animal filesep day filesep experiment ...
                 filesep day '_' experiment '_' animal '_Timeline.mat'];
         end
