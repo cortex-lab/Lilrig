@@ -135,7 +135,7 @@ if protocol_exists
         photodiode_onsets = photodiode_flip_times(1:2:end);
         photodiode_offsets = photodiode_flip_times(2:2:end);
     else
-        error('Odd number of photodiode flips')
+        error('Odd number of photodiode flips - debug (first or last bad?)')
     end
     
     % Get flicker/steady photodiode mode
