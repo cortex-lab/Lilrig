@@ -38,7 +38,7 @@ switch stim_program
         % (medfilt because photodiode can be intermediate value when backlight
         % coming on)
         photodiode_trace_medfilt = medfilt1(Timeline.rawDAQData(stimScreen_on, ...
-            photodiode_idx),1) > photodiode_thresh;
+            photodiode_idx),3) > photodiode_thresh;
         photodiode_flip = find((~photodiode_trace_medfilt(1:end-1) & photodiode_trace_medfilt(2:end)) | ...
             (photodiode_trace_medfilt(1:end-1) & ~photodiode_trace_medfilt(2:end)))+1;
         photodiode_flip_times = stimScreen_on_t(photodiode_flip)';       
@@ -321,7 +321,7 @@ end
 
 vfs_median = imgaussfilt(nanmedian(vfs_boot,3),2);
 
-figure('Name',animal);
+figure('Name',[animal ' ' day]);
 ax1 = axes;
 subplot(1,2,1,ax1);
 imagesc(vfs_median);
@@ -346,3 +346,4 @@ axes(ax3); axis image off;
 set(h2,'AlphaData',mat2gray(abs(vfs_median))*0.3);
 colormap(ax2,gray);
 
+drawnow;
