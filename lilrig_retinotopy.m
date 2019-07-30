@@ -38,7 +38,7 @@ switch stim_program
         % (medfilt because photodiode can be intermediate value when backlight
         % coming on)
         photodiode_trace_medfilt = medfilt1(Timeline.rawDAQData(stimScreen_on, ...
-            photodiode_idx),3) > photodiode_thresh;
+            photodiode_idx),1) > photodiode_thresh;
         photodiode_flip = find((~photodiode_trace_medfilt(1:end-1) & photodiode_trace_medfilt(2:end)) | ...
             (photodiode_trace_medfilt(1:end-1) & ~photodiode_trace_medfilt(2:end)))+1;
         photodiode_flip_times = stimScreen_on_t(photodiode_flip)';       
