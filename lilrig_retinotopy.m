@@ -45,22 +45,28 @@ switch stim_program
         
         switch lower(photodiode_type)
             case 'flicker'
-                % Check for case of mismatch between photodiode and stimuli:
-                % odd number of stimuli, but one extra photodiode flip to come back down
-                if mod(size(stim_screen,3),2) == 1 && ...
+               
+                if size(stim_screen,3) == length(photodiode_flip_times)
+                    % If stim matches photodiode, use directly
+                    stim_times = photodiode_flip_times;
+                    
+                elseif mod(size(stim_screen,3),2) == 1 && ...
                         length(photodiode_flip_times) == size(stim_screen,3) + 1
+                    % Check for case of mismatch between photodiode and stimuli:
+                    % odd number of stimuli, but one extra photodiode flip to come back down
                     photodiode_flip_times(end) = [];
                     stim_times = photodiode_flip_times;
                     warning('Odd number of stimuli, removed last photodiode');
                     
-                % If there's a different kind of mismatch, guess stim times
-                % by interpolation
                 elseif size(stim_screen,3) ~= length(photodiode_flip_times)
+                    % If there's a different kind of mismatch, guess stim times
+                    % by interpolation
                     photodiode_flip_times = photodiode_flip_times([1,end]);
                     stim_duration = diff(photodiode_flip_times)/size(stim_screen,3);
                     stim_times = linspace(photodiode_flip_times(1), ...
                         photodiode_flip_times(2)-stim_duration,size(stim_screen,3))';
-                end                                         
+                    warning('Mismatching stim and photodiode, interpolating start/end')
+                end
                 
                 % (this was a started attempt to fix dropped frames, hasn't
                 % happened in a long time so not finished)
@@ -347,3 +353,4 @@ set(h2,'AlphaData',mat2gray(abs(vfs_median))*0.3);
 colormap(ax2,gray);
 
 drawnow;
+
