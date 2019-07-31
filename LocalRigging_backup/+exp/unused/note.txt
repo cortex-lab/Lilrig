@@ -1,0 +1,3 @@
+matlab was finding both of these functions in \\zserver\Code\nick\+exp\, so I'm guessing that the local versions are legacy
+put them in here with altered names in case they're needed, because I want to have other overridden local files
+AP 170629
