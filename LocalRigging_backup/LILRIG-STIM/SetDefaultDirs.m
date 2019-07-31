@@ -33,9 +33,8 @@ if isunix
 else   
     serverName     = '\\zubjects.cortexlab.net';
 %     server2Name    = '\\zserver2.cortexlab.net';  
-    server2Name    = '\\zubjects.cortexlab.net'; 
+    server2Name    = '\\zserver.cortexlab.net'; 
     server3Name    = '\\zserver3.cortexlab.net'; 
-    cloneName = '\\zclone.cortexlab.net';
     
     serverName_alt     = '\\zserver.ioo.ucl.ac.uk';
 %     server2Name_alt    = '\\zserver2.ioo.ucl.ac.uk';  
@@ -50,11 +49,11 @@ else
     
 end
 
-if ~isdir(fullfile(cloneName,'Data'))
+if ~isdir(fullfile(serverName,'Data'))
     if isdir(fullfile(serverName_alt,'Data'))
-        cloneName = serverName_alt;
+        serverName = serverName_alt;
     else
-        fprintf('Make sure directory %s is accessible!\n',fullfile(cloneName,'Data'));
+        fprintf('Make sure directory %s is accessible!\n',fullfile(serverName,'Data'));
     end
 end
 if ~isdir(fullfile(server2Name,'Data'))
@@ -72,20 +71,23 @@ end
 %     end
 % end
 
-% DIRS.data           = fullfile(serverName,'Data','trodes');
+
 DIRS.data           = fullfile(serverName,'Subjects');
 DIRS.spikes         = fullfile(serverName,'Data','Spikes');
 DIRS.camera         = fullfile(serverName,'Data','Intrinsic');
-DIRS.Intrinsic      = fullfile(serverName,'Data','Intrinsic');
-DIRS.EyeCamera      = fullfile(serverName,'Data','EyeCamera');
+DIRS.Intrinsic      = fullfile(serverName,'Data','Intrinsic'); % Piperico changed to zserver
+DIRS.EyeCamera      = fullfile(serverName,'Data','EyeCamera'); % Piperico changed to zserver 
 DIRS.EyeTrack       = fullfile(serverName,'Data','EyeTrack');
-DIRS.xfiles         = fullfile(serverName,'Data','xfiles');
+
+DIRS.xfiles         = fullfile(server2Name,'Data','xfiles');
+
 DIRS.michigan       = fullfile(serverName,'Data','michigan');
 DIRS.Cerebus        = fullfile(serverName,'Data','Cerebus');
 DIRS.stimInfo       = fullfile(serverName,'Data','stimInfo');
 DIRS.behavior       = fullfile(serverName,'Data','behavior');
 DIRS.mouselogs      = fullfile(serverName,'Data','logs','mouse','behavior');
 DIRS.multichanspikes= fullfile(serverName,'Data','multichanspikes');
-DIRS.ball           = fullfile(serverName,'Data','ball');
-DIRS.Stacks         = fullfile(server3Name,'Data','Stacks');
+DIRS.ball           = fullfile(serverName,'Subjects');
+DIRS.Stacks         = fullfile(server3Name,'Data','Stacks'); % Piperico changed to zserver3
 DIRS.expInfo        = fullfile(serverName,'Data','expInfo');
+DIRS.oldData        = fullfile(server2Name,'Data','trodes');
