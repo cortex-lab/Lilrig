@@ -91,11 +91,16 @@ switch stim_program
         ny = size(block.events.stimuliOnValues,1);
         nx = size(block.events.stimuliOnValues,2)/ ...
             size(block.events.stimuliOnTimes,2);
-        stim_screen = reshape(block.events.stimuliOnValues,ny,nx,[]);
-        % (the first photodiode is initializing from gray to black)
-        stim_times = photodiode_flip_times(2:end);
-        % (if cut, assume at the beinning: is this because startup missed?)
+        
+        % Get stim (not firsrt: initializes to black on startup)
+        stim_screen = reshape(block.events.stimuliOnValues(:,nx+1:end),ny,nx,[]);      
+        
+        % Each photodiode flip is a screen update
+        stim_times = photodiode_flip_times;
+        
+        % (if mismatch, just try matching the last n stim)
         if size(stim_screen,3) > length(stim_times)
+            warning('More stims than photodiode flips - truncating beginning')
             stim_screen(:,:,1:(size(stim_screen,3)-length(stim_times))) = [];
         end
         
@@ -109,7 +114,7 @@ end
 
 %% Get average response to each stimulus (bootstrap mean)
 
-surround_window = [0.4,0.5]; % 6s = [0.4,0.5]
+surround_window = [0.3,0.5]; % 6s = [0.3,0.5]
 framerate = 1./nanmedian(diff(frame_t));
 surround_samplerate = 1/(framerate*1);
 surround_time = surround_window(1):surround_samplerate:surround_window(2);
@@ -180,7 +185,7 @@ use_u_y = 1:Uy;
 Ud = imresize(U(use_u_y,:,:),1/U_downsample_factor,'bilinear');
 
 % Convert V responses to pixel responses
-use_svs = 1:100; % de-noises, otherwise size(U,3)
+use_svs = 1:500; % de-noises, otherwise size(U,3)
 n_boot = 10;
 
 response_mean_boostrap = cellfun(@(x) bootstrp(n_boot,@mean,x')',response_grid,'uni',false);
@@ -228,7 +233,7 @@ end
 
 %% Plot retinotopy (median across bootstraps)
 
-vfs_median = imgaussfilt(nanmedian(vfs_boot,3),2);
+vfs_median = imgaussfilt(nanmean(vfs_boot,3),3);
 
 figure('Name',[animal ' ' day]);
 ax1 = axes;
@@ -252,7 +257,7 @@ set(ax2,'Visible','off');
 axes(ax2); axis image off;
 set(ax3,'Visible','off');
 axes(ax3); axis image off;
-set(h2,'AlphaData',mat2gray(abs(vfs_median))*0.3);
+set(h2,'AlphaData',mat2gray(abs(vfs_median))*0.5);
 colormap(ax2,gray);
 
 drawnow;
