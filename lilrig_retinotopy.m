@@ -174,6 +174,7 @@ for px_y = 1:ny
         
     end
 end
+keyboard
 
 % Get position preference for every pixel
 U_downsample_factor = 1; %2 if max method
@@ -188,7 +189,7 @@ Ud = imresize(U(use_u_y,:,:),1/U_downsample_factor,'bilinear');
 use_svs = 1:500; % de-noises, otherwise size(U,3)
 n_boot = 10;
 
-response_mean_boostrap = cellfun(@(x) bootstrp(n_boot,@mean,x')',response_grid,'uni',false);
+response_mean_bootstrap = cellfun(@(x) bootstrp(n_boot,@mean,x')',response_grid,'uni',false);
 
 %% Get retinotopy (for each bootstrap)
 
@@ -196,7 +197,7 @@ use_method = 'com'; % max or com
 vfs_boot = nan(size(Ud,1),size(Ud,2),n_boot);
 for curr_boot = 1:n_boot
     
-    response_mean = cell2mat(cellfun(@(x) x(:,curr_boot),response_mean_boostrap(:),'uni',false)');
+    response_mean = cell2mat(cellfun(@(x) x(:,curr_boot),response_mean_bootstrap(:),'uni',false)');
     stim_im_px = reshape(permute(svdFrameReconstruct(Ud(:,:,use_svs),response_mean(use_svs,:)),[3,1,2]),ny,nx,[]);
     gauss_filt = fspecial('gaussian',[ny,nx],filter_sigma);
     stim_im_smoothed = imfilter(imresize(stim_im_px,screen_resize_scale,'bilinear'),gauss_filt);
