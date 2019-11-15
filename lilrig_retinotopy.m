@@ -37,9 +37,7 @@ switch stim_program
     
     %% MPEP sparse noise retinotopy
     case 'mpep'
-        
-        [Uy,Ux,nSV] = size(U);
-        
+                
         % Generate the sparse noise stimuli from the protocol
         myScreenInfo.windowPtr = NaN; % so we can call the stimulus generation and it won't try to display anything
         stimNum = 1;
@@ -85,9 +83,7 @@ switch stim_program
         end
         
     case 'signals'
-        
-        [Uy,Ux,nSV] = size(U);
-        
+                
         ny = size(block.events.stimuliOnValues,1);
         nx = size(block.events.stimuliOnValues,2)/ ...
             size(block.events.stimuliOnTimes,2);
@@ -98,10 +94,16 @@ switch stim_program
         % Each photodiode flip is a screen update
         stim_times = photodiode_flip_times;
         
-        % (if mismatch, just try matching the last n stim)
+        % (if more stim than times, just try matching the last n stim)
         if size(stim_screen,3) > length(stim_times)
             warning('More stims than photodiode flips - truncating beginning')
             stim_screen(:,:,1:(size(stim_screen,3)-length(stim_times))) = [];
+        end
+        
+        % (if times than stim, just try using the last n times)
+        if size(stim_screen,3) < length(stim_times)
+            warning('More photodiode flips than stim - truncating beginning')
+            stim_times(1:(length(stim_times)-size(stim_screen,3))) = [];
         end
         
 end
@@ -181,6 +183,7 @@ screen_resize_scale = 1; %3 if max method
 filter_sigma = (screen_resize_scale*2);
 
 % Downsample U
+[Uy,Ux,nSV] = size(U);
 use_u_y = 1:Uy;
 Ud = imresize(U(use_u_y,:,:),1/U_downsample_factor,'bilinear');
 
@@ -233,7 +236,7 @@ end
 
 %% Plot retinotopy (median across bootstraps)
 
-vfs_median = imgaussfilt(nanmean(vfs_boot,3),3);
+vfs_median = imgaussfilt(nanmean(vfs_boot,3),2);
 
 figure('Name',[animal ' ' day]);
 ax1 = axes;

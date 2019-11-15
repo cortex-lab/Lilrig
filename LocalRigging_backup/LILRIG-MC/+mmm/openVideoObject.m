@@ -62,8 +62,8 @@ switch [rigName '_' videoID]
         src = getselectedsource(vidObj);
         src.ExposureMode = 'manual';
         src.GainMode = 'manual';
-        src.Gain = 260;
-        src.Exposure = -6;
+        src.Gain = 1000;
+        src.Exposure = -5;
         src.FrameRate = '30.0000';
         
         vidObj.FramesPerTrigger = Inf;
