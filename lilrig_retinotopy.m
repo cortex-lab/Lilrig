@@ -176,7 +176,6 @@ for px_y = 1:ny
         
     end
 end
-keyboard
 
 % Get position preference for every pixel
 U_downsample_factor = 1; %2 if max method
