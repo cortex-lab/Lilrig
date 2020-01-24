@@ -1,7 +1,9 @@
-function [filename,file_exists] = AP_cortexlab_filename(animal,day,experiment,file,site)
-% [filename,file_exists] = AP_cortexlab_filename(animal,day,experiment,file,site)
+function [filename,file_exists] = AP_cortexlab_filename(animal,day,experiment,file,site,recording)
+% [filename,file_exists] = AP_cortexlab_filename(animal,day,experiment,file,site,recording)
 %
-% file - can include:
+% This is an absolute mess because of lab-wide inconsistency
+%
+% file types:
 % expInfo
 % timeline
 % block
@@ -11,11 +13,13 @@ function [filename,file_exists] = AP_cortexlab_filename(animal,day,experiment,fi
 % eyecam_processed
 % facecam
 % facecam_processed
+% facecam_movement
 % hardware
 % imaging
 % ephys
-% ephysraw
-% probe_histology
+% ephys_ks1
+% ephys_dir
+% ephys_ap
 
 % Make inputs strings if they're numbers
 if isnumeric(experiment)
@@ -26,41 +30,32 @@ if isnumeric(day)
     experiment = num2str(day);
 end
 
+% Site = multiple probes
 if exist('site','var') && ~isempty(site)
     if isnumeric(site)
         site = num2str(site);
     end
     site_dir = [filesep 'site' site];
 else
+    site = [];
     site_dir = [];
 end
 
-%%%% DATE FORMAT: NOT USED ANY MORE (the standard is yyyy-mm-dd)
-% % There is no lab convention for dates so it's all mixed up, make both
-% % versions and use as necessary
-% isdaydash = any(strfind(day,'-'));
-% if isdaydash
-%     day_dash = day;
-%     day_8digit = datestr(datenum(day,'yyyy-mm-dd'),'yyyymmdd');
-% elseif ~isdaydash
-%     day_dash = datestr(datenum(day,'yyyymmdd'),'yyyy-mm-dd');
-%     day_8digit = day;
-% end
-%
-% % Switch the used day format if necessary
-% if exist('dayformat','var') && ~isempty(dayformat)
-%     switch dayformat
-%         case 'dash'
-%             day = day_dash;
-%         case '8digit'
-%             day = day_8digit;
-%     end
-% end
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Recording = separated recordings from single probe
+if exist('recording','var') && ~isempty(recording)
+    if isnumeric(recording)
+        recording = num2str(recording);
+    end
+    recording_dir = [filesep 'experiment' recording];
+else
+    recording = [];
+    recording_dir = [];
+end
 
-% server1 = '\\zclone.cortexlab.net';
+% List servers
 server1 = '\\zserver.cortexlab.net';
 server2 = '\\zubjects.cortexlab.net';
+server3 = '\\znas.cortexlab.net';
 
 % Check that servers are accessible (login needed on restart)
 if ~exist([server1 filesep 'Data'])
@@ -69,156 +64,163 @@ end
 if ~exist([server2 filesep 'Subjects'])
     error('Zubjects not available');
 end
+if ~exist([server3 filesep 'Subjects'])
+    error('Znas not available');
+end
+
+% List all folders to check
+server_location = cell(0);
+server_location{end+1} = [server3 filesep 'Subjects'];
+server_location{end+1} = [server2 filesep 'Subjects'];
+server_location{end+1} = [server1 filesep 'Data' filesep 'Subjects'];
+server_location{end+1} = [server1 filesep 'Data' filesep 'expInfo'];
+server_location{end+1} = [server1 filesep 'Data' filesep 'trodes'];
+server_location{end+1} = [server1 filesep 'Data' filesep 'EyeCamera'];
 
 switch file
     
     case 'expInfo'
-        filepath = [server1 filesep 'Data\expInfo'];
-        filename = [filepath filesep animal filesep day filesep];
-        % CHECK SERVER2 IF IT DOESN'T EXIST
-        if ~exist(filename,'file')
-            filepath = [server2 filesep 'Subjects'];
-            filename = [filepath filesep animal filesep day filesep];
+        filepattern = [animal filesep day filesep];
+        [filename,file_exists] = check_locations(filepattern,server_location);
+        if file_exists
+            filename = fileparts(filename{1});
         end
         
     case 'timeline'
-        filepath = [server1 filesep 'Data\expInfo'];
-        filename = [filepath filesep animal filesep day filesep experiment ...
+        filepattern = [animal filesep day filesep experiment ...
             filesep day '_' experiment '_' animal '_Timeline.mat'];
-        % CHECK SERVER2 IF IT DOESN'T EXIST
-        if ~exist(filename,'file')
-            filepath = [server1 filesep 'Data' filesep 'Subjects'];
-            filename = [filepath filesep animal filesep day filesep experiment ...
-                filesep day '_' experiment '_' animal '_Timeline.mat'];
-        end
+        [filename,file_exists] = check_locations(filepattern,server_location);
         
     case 'block'
-        filepath = [server1 filesep 'Data\expInfo'];
-        filename = [filepath filesep animal filesep day filesep experiment ...
+        filepattern = [animal filesep day filesep experiment ...
             filesep day '_' experiment '_' animal '_Block.mat'];
-        % CHECK SERVER2 IF IT DOESN'T EXIST
-        if ~exist(filename,'file')
-            filepath = [server2 filesep 'Subjects'];
-            filename = [filepath filesep animal filesep day filesep experiment ...
-                filesep day '_' experiment '_' animal '_Block.mat'];
-        end
+        [filename,file_exists] = check_locations(filepattern,server_location);
         
     case 'parameters'
-        filepath = [server1 filesep 'Data\expInfo'];
-        filename = [filepath filesep animal filesep day filesep experiment ...
+        filepattern = [animal filesep day filesep experiment ...
             filesep day '_' experiment '_' animal '_parameters.mat'];
-        % CHECK SERVER2 IF IT DOESN'T EXIST
-        if ~exist(filename,'file')
-            filepath = [server2 filesep 'Subjects'];
-            filename = [filepath filesep animal filesep day filesep experiment ...
-                filesep day '_' experiment '_' animal '_parameters.mat'];
-        end
+        [filename,file_exists] = check_locations(filepattern,server_location);
         
     case 'protocol'
-        filepath = [server1 filesep 'Data\trodes'];
-        filename = [filepath filesep animal filesep day filesep experiment filesep 'Protocol.mat'];
-        % CHECK SERVER2 IF IT DOESN'T EXIST
-        if ~exist(filename,'file')
-            filepath = [server2 filesep 'Subjects'];
-            filename = [filepath filesep animal filesep day filesep experiment filesep 'Protocol.mat'];
-        end
+        filepattern = [animal filesep day filesep experiment filesep 'Protocol.mat'];
+        [filename,file_exists] = check_locations(filepattern,server_location);
         
     case 'eyecam'
-        filepath = [server1 filesep 'Data\EyeCamera'];
-        filename = [filepath filesep animal filesep day filesep experiment ...
-            filesep 'eye.mj2'];
-        % CHECK SERVER2 IF IT DOESN'T EXIST
-        if ~exist(filename,'file')
-            filepath = [server2 filesep 'Subjects'];
-            filename = [filepath filesep animal filesep day filesep experiment filesep 'eye.mj2'];
-        end
+        filepattern = [animal filesep day filesep experiment filesep 'eye.mj2'];
+        [filename,file_exists] = check_locations(filepattern,server_location);
         
     case 'facecam'
-        filepath = [server1 filesep 'Data\EyeCamera'];
-        filename = [filepath filesep animal filesep day filesep experiment ...
-            filesep 'face.mj2'];
-        % CHECK SERVER2 IF IT DOESN'T EXIST
-        if ~exist(filename,'file')
-            filepath = [server2 filesep 'Subjects'];
-            filename = [filepath filesep animal filesep day filesep experiment filesep 'face.mj2'];
-        end
+        filepattern = [animal filesep day filesep experiment filesep 'face.mj2'];
+        [filename,file_exists] = check_locations(filepattern,server_location);
         
-    % Old (with etGUI)
-%     case 'eyecam_processed'
-%         filepath = '\\zserver1.cortexlab.net\Data\EyeCamera';
-%         filename = [filepath filesep mouse filesep day filesep experiment ...
-%             filesep day '_' experiment '_' mouse '_eye_processed.mat'];
-
-    % New (with eyeGUI)
     case 'eyecam_processed'
-        filepath = [server1 filesep 'Data\EyeCamera'];
-        filename = [filepath filesep animal filesep day filesep experiment ...
-            filesep 'eye_proc.mat'];
+        filepattern = [animal filesep day filesep experiment filesep 'eye_proc.mat'];
+        [filename,file_exists] = check_locations(filepattern,server_location);
         
     case 'facecam_processed'
-        filepath = [server1 filesep 'Data\EyeCamera'];
-        filename = [filepath filesep animal filesep day filesep experiment ...
-            filesep 'face_proc.mat'];
+        filepattern = [animal filesep day filesep experiment filesep 'face_proc.mat'];
+        [filename,file_exists] = check_locations(filepattern,server_location);
+        
+    case 'facecam_movement'
+        % (output from AP_mouse_movie_movement)
+        filepattern = [animal filesep day filesep experiment filesep 'facecam_movement.mat'];
+        [filename,file_exists] = check_locations(filepattern,server_location);
         
     case 'hardware'
-        filepath = [server1 filesep 'Data\expInfo'];
-        filename = [filepath filesep animal filesep day filesep experiment ...
+        filepattern = [animal filesep day filesep experiment ...
             filesep day '_' experiment '_' animal '_hardwareInfo.mat'];
-        % CHECK SERVER2 IF IT DOESN'T EXIST
-        if ~exist(filename,'file')
-            filepath = [server2 filesep 'Subjects'];
-            filename = [filepath filesep animal filesep day filesep experiment ...
-            filesep day '_' experiment '_' animal '_hardwareInfo.mat'];
-        end
+        [filename,file_exists] = check_locations(filepattern,server_location);
         
     case 'imaging'
-        filepath = [server1 filesep 'Data\Subjects'];
-        filename = [filepath filesep animal filesep day site_dir filesep];
-        % CHECK SERVER2 IF IT DOESN'T EXIST
-        if ~exist(filename,'dir')
-            filepath = [server2 filesep 'Subjects'];
-            filename = [filepath filesep animal filesep day site_dir filesep];
+        filepattern = [animal filesep day filesep filesep 'svd*'];
+        [filename,file_exists] = check_locations(filepattern,server_location);
+        if file_exists && iscell(filename)
+            filename = fileparts(filename{1});
+        elseif file_exists && isstr(filename)
+            filename = fileparts(filename);
+        end
+        
+    case 'ephys_dir'
+        % (the path where the ephys data is kept)
+        filepattern = [animal filesep day filesep 'ephys' site_dir];
+        [filename,file_exists] = check_locations(filepattern,server_location);
+        if file_exists
+            filename = fileparts(filename{1});
+        end
+        
+    case 'ephys_ap'
+        % (the raw action potential band data file)
+        
+        % Old open ephys
+        filepattern = [animal filesep day filesep 'ephys' site_dir filesep 'experiment1_10*-0_0.dat'];
+        [filename,file_exists] = check_locations(filepattern,server_location);
+        
+        % New open ephys
+        if ~file_exists
+            filepattern = [animal filesep day filesep ...
+                'ephys' site_dir filesep 'experiment1' filesep 'recording1' ...
+                filesep 'continuous'  filesep 'Neuropix-3a-100.0' filesep 'continuous.dat'];
+            [filename,file_exists] = check_locations(filepattern,server_location);
         end
         
     case 'ephys'
-        filepath = [server1 filesep 'Data\Subjects'];
-        filename = [filepath filesep animal filesep day filesep 'ephys' filesep 'kilosort' site_dir filesep];
-        % CHECK SERVER2 IF IT DOESN'T EXIST
-        if ~exist(filename,'dir')
-            filepath = [server2 filesep 'Subjects'];
-            filename = [filepath filesep animal filesep day filesep 'ephys' filesep 'kilosort' site_dir filesep];
+        % (folder with kilosort/phy outputs)
+        
+        kilosort_version = 2; % (kilosort 2 by default)
+        
+        % Drop the kilosort version in the base workspace
+        assignin('base','kilosort_version',kilosort_version);
+        
+        filepattern = [animal filesep day filesep 'ephys'  filesep 'kilosort2' filesep site_dir filesep recording_dir];
+        [filename,file_exists] = check_locations(filepattern,server_location);
+        if file_exists
+            filename = fileparts(filename{1});
         end
         
-    case 'ephysraw'
-        filepath = [server1 filesep 'Data\Subjects'];
-        filename = [filepath filesep animal filesep day filesep 'ephys' site_dir filesep 'experiment1_10*-0_0.dat'];
-        % CHECK SERVER2 IF IT DOESN'T EXIST
-        if isempty(dir(filename))
-            filepath = [server2 filesep 'Subjects'];
-            filename = [filepath filesep animal filesep day filesep 'ephys' site_dir filesep 'experiment1_10*-0_0.dat'];
-        end
-        % CHECK NEW OPEN EPHYS ON SERVER2 IF IT DOESN'T EXIST
-        if isempty(dir(filename))
-            filepath = [server2 filesep 'Subjects'];
-            filename = [filepath filesep animal filesep day filesep ...
-                'ephys' site_dir filesep 'experiment1' filesep 'recording1' ...
-                filesep 'continuous' filesep 'Neuropix-3a-100.0' filesep 'continuous.dat'];
-        end
+    case 'ephys_ks1'
+        % folder with kilosort/phy outputs
         
-    case 'probe_histology'
-        % (the output from P Shamash's program for histology to probe)
-        filepath = [server2 filesep 'Subjects'];
-        filepattern = [filepath filesep animal filesep 'histology' filesep 'probe' filesep 'processed' filesep 'probe_points*.mat'];
-        filepattern_dir = dir(filepattern);
-        if ~isempty(filepattern_dir) && length(filepattern_dir) == 1
-            filename = [filepattern_dir.folder filesep filepattern_dir.name];
-        else 
-            filename = filepattern;
+        kilosort_version = 1; % (kilosort 2 by default)
+        
+        % Drop the kilosort version in the base workspace
+        assignin('base','kilosort_version',kilosort_version);
+        
+        filepattern = [animal filesep day filesep 'ephys' filesep 'kilosort' filesep site_dir filesep recording_dir];
+        [filename,file_exists] = check_locations(filepattern,server_location);
+        if file_exists
+            filename = fileparts(filename{1});
         end
         
 end
+end
 
-file_exists = exist(filename) > 0;
+
+function [filename,file_exists] = check_locations(filepattern,server_location)
+
+% Loop through all server locations and look for file
+for curr_location = 1:length(server_location)
+    curr_filename = [server_location{curr_location} filesep filepattern];
+    curr_filename_dir = dir(curr_filename);
+    file_exists = ~isempty(curr_filename_dir);
+    
+    if file_exists
+        % If found, break and use this filename
+        if length(curr_filename_dir) == 1
+            filename = [curr_filename_dir.folder filesep curr_filename_dir.name];
+        else
+            filename = cellfun(@(path,fn) [path filesep fn], ...
+                {curr_filename_dir.folder},{curr_filename_dir.name},'uni',false);
+        end
+        break
+    else
+        % If not found, clear filename
+        filename = [];
+    end
+end
+
+end
+
+
 
 
 
