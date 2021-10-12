@@ -52,30 +52,28 @@ else
     recording_dir = [];
 end
 
-% List servers
-server1 = '\\zserver.cortexlab.net';
-server2 = '\\zubjects.cortexlab.net';
-server3 = '\\znas.cortexlab.net';
-
-% Check that servers are accessible (login needed on restart)
-if ~exist([server1 filesep 'Data'])
-    error('Zserver not available');
-end
-if ~exist([server2 filesep 'Subjects'])
-    error('Zubjects not available');
-end
-if ~exist([server3 filesep 'Subjects'])
-    error('Znas not available');
-end
-
 % List all folders to check
 server_location = cell(0);
-server_location{end+1} = [server3 filesep 'Subjects'];
-server_location{end+1} = [server2 filesep 'Subjects'];
-server_location{end+1} = [server1 filesep 'Data' filesep 'Subjects'];
-server_location{end+1} = [server1 filesep 'Data' filesep 'expInfo'];
-server_location{end+1} = [server1 filesep 'Data' filesep 'trodes'];
-server_location{end+1} = [server1 filesep 'Data' filesep 'EyeCamera'];
+% (zserver: different files used to be split across folders)
+server_location{end+1} = '\\zserver.cortexlab.net\Data\Subjects';
+server_location{end+1} = '\\zserver.cortexlab.net\Data\expInfo';
+server_location{end+1} = '\\zserver.cortexlab.net\Data\trodes';
+server_location{end+1} = '\\zserver.cortexlab.net\Data\EyeCamera';
+% (zubjects: after zserver full)
+server_location{end+1} = '\\zubjects.cortexlab.net\Subjects';
+% (znas: after zubjects full)
+server_location{end+1} = '\\znas.cortexlab.net\Subjects';
+% (DRI server - temporary?)
+server_location{end+1} = '\\128.40.224.65\Subjects';
+
+
+% Check that servers are accessible (login needed on restart)
+warning on
+for curr_location = 1:length(server_location)
+   if ~exist(server_location{curr_location},'dir')
+       error([server_location{curr_location} ' not available']);
+   end
+end
 
 switch file
     
@@ -190,6 +188,12 @@ switch file
         if file_exists
             filename = fileparts(filename{1});
         end
+        
+    case 'probe_ccf'
+        % Histology probe location from AP histology
+        % (sometimes upper/lowecase "Histology" folder)
+        filepattern = [animal filesep '*istology' filesep 'slices' filesep 'probe_ccf.mat'];
+        [filename,file_exists] = check_locations(filepattern,server_location);
         
 end
 end
