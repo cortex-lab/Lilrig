@@ -471,14 +471,12 @@ title('Aligned VFS');
 figure;
 overlay_color = 'b';
 
-ax1 = axes('units','normalized','Position',[0,0,0.5,1]);
-ax2 = axes('units','normalized','Position',[0,0,0.5,1]);
-h1 = imagesc(ax1,avg_im_aligned); 
+ax1 = axes('units','normalized','Position',[0,0,0.5,1],'DataAspectRatio',[1,1,1],'visible','off');
+ax2 = axes('units','normalized','Position',[0,0,0.5,1],'DataAspectRatio',[1,1,1],'visible','off');
+h1 = imagesc(ax1,avg_im_aligned);
 colormap(ax1,gray);
 caxis(ax1,[0 prctile(avg_im(:),98)]);
-h2 = imagesc(ax2,vfs_aligned); 
-axes(ax1); hold on; axis equal off;
-axes(ax2); hold on; axis equal off;
+h2 = imagesc(ax2,vfs_aligned); axis off;
 colormap(ax2,colormap_BlueWhiteRed);
 caxis([-1,1]);
 set(h2,'AlphaData',mat2gray(abs(vfs_aligned))*0.4);
