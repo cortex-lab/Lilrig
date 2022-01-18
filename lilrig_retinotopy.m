@@ -100,6 +100,11 @@ switch stim_program
                 % Each photodiode flip is a screen update
                 stim_times = photodiode_flip_times;
                 
+                % (if there's a >10% difference in stim times, error out)
+                if abs(size(stim_screen,3)-length(stim_times)) >= (size(stim_screen,3)*0.1)
+                    error('Big mismatch between stim and photodiode number')
+                end
+                
                 % (if more stim than times, just try matching the last n stim)
                 if size(stim_screen,3) > length(stim_times)
                     warning('More stims than photodiode flips - truncating beginning')
