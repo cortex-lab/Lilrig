@@ -42,7 +42,7 @@ end
 
 %% Load timeline and associated inputs
 
-[timeline_filename,timeline_exists] = AP_cortexlab_filename(animal,day,experiment,'timeline');
+[timeline_filename,timeline_exists] = AP_cortexlab_filename_lilrig(animal,day,experiment,'timeline');
 if ~timeline_exists
     error([animal ' ' day ': no timeline']);
 end
@@ -118,7 +118,7 @@ end
 
 %% Load mpep protocol
 
-[protocol_filename,protocol_exists] = AP_cortexlab_filename(animal,day,experiment,'protocol');
+[protocol_filename,protocol_exists] = AP_cortexlab_filename_lilrig(animal,day,experiment,'protocol');
 
 if protocol_exists
     
@@ -127,7 +127,7 @@ if protocol_exists
     load(protocol_filename);
     
     % Load in hardware info
-    hwinfo_filename = AP_cortexlab_filename(animal,day,experiment,'hardware');
+    hwinfo_filename = AP_cortexlab_filename_lilrig(animal,day,experiment,'hardware');
     load(hwinfo_filename);
         
     % Stim times should just be odd (on) and even (off)
@@ -168,7 +168,7 @@ end
 %% Load task/behavior
 
 % Load the block
-[block_filename, block_exists] = AP_cortexlab_filename(animal,day,experiment,'block');
+[block_filename, block_exists] = AP_cortexlab_filename_lilrig(animal,day,experiment,'block');
 
 if block_exists
     
@@ -406,19 +406,19 @@ if exist('Timeline','var') && load_parts.cam
     camSync_up = find((~camSync(1:end-1) & camSync(2:end)))+1;
     
     % EYECAM
-    [eyecam_dir,eyecam_exists] = AP_cortexlab_filename(animal,day,experiment,'eyecam');
+    [eyecam_dir,eyecam_exists] = AP_cortexlab_filename_lilrig(animal,day,experiment,'eyecam');
     
     if eyecam_exists
         if verbose; disp('Loading eyecam...'); end
         
         % Load camera processed data
-        [eyecam_processed_filename,eyecam_processed_exists] = AP_cortexlab_filename(animal,day,experiment,'eyecam_processed');
+        [eyecam_processed_filename,eyecam_processed_exists] = AP_cortexlab_filename_lilrig(animal,day,experiment,'eyecam_processed');
         if eyecam_processed_exists
             eyecam = load(eyecam_processed_filename);
         end
         
         % Get camera times
-        eyecam_fn = AP_cortexlab_filename(animal,day,experiment,'eyecam');
+        eyecam_fn = AP_cortexlab_filename_lilrig(animal,day,experiment,'eyecam');
         eyecam_dir = fileparts(eyecam_fn);
         eyecam_t_savefile = [eyecam_dir filesep 'eyecam_t.mat'];
         
@@ -452,18 +452,18 @@ if exist('Timeline','var') && load_parts.cam
     end
     
     % FACECAM
-    [facecam_dir,facecam_exists] = AP_cortexlab_filename(animal,day,experiment,'facecam');
+    [facecam_dir,facecam_exists] = AP_cortexlab_filename_lilrig(animal,day,experiment,'facecam');
     
     if facecam_exists
         if verbose; disp('Loading facecam...'); end
         
-        [facecam_processed_filename,facecam_processed_exists] = AP_cortexlab_filename(animal,day,experiment,'facecam_processed');
+        [facecam_processed_filename,facecam_processed_exists] = AP_cortexlab_filename_lilrig(animal,day,experiment,'facecam_processed');
         if facecam_processed_exists
             facecam = load(facecam_processed_filename);
         end
         
         % Get camera times
-        facecam_fn = AP_cortexlab_filename(animal,day,experiment,'facecam');
+        facecam_fn = AP_cortexlab_filename_lilrig(animal,day,experiment,'facecam');
         facecam_dir = fileparts(facecam_fn);
         facecam_t_savefile = [facecam_dir filesep 'facecam_t.mat'];
         
@@ -500,7 +500,7 @@ end
 
 %% Load imaging data
 
-[data_path,data_path_exists] = AP_cortexlab_filename(animal,day,experiment,'imaging',site);
+[data_path,data_path_exists] = AP_cortexlab_filename_lilrig(animal,day,experiment,'imaging',site);
 experiment_path = [data_path filesep num2str(experiment)];
 
 % (check for specific imaging file since data path is just root)
@@ -650,7 +650,7 @@ end
 
 
 %% Load ephys data (single long recording)
-[ephys_path,ephys_exists] = AP_cortexlab_filename(animal,day,experiment,'ephys',site);
+[ephys_path,ephys_exists] = AP_cortexlab_filename_lilrig(animal,day,experiment,'ephys',site);
 
 if ephys_exists && load_parts.ephys
     
@@ -723,7 +723,7 @@ if ephys_exists && load_parts.ephys
     % Load LFP
     n_channels = str2num(header.n_channels);
     %lfp_filename = [ephys_path filesep 'lfp.dat']; (this is old)
-    [data_path,data_path_exists] = AP_cortexlab_filename(animal,day,experiment,'ephysraw',site);
+    [data_path,data_path_exists] = AP_cortexlab_filename_lilrig(animal,day,experiment,'ephysraw',site);
     lfp_dir = dir([data_path 'experiment*-1_0.dat']);
     lfp_filename = [data_path lfp_dir.name];
     if load_lfp && exist(lfp_filename,'file')
