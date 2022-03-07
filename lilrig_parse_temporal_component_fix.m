@@ -16,7 +16,7 @@ animal = ''; % animal name
 day = ''; % yyyy-mm-dd
 experiments = []; % all experiments run that day (e.g. [1,2,3,4])
 
-[data_path,file_exists] = AP_cortexlab_filename(animal,day,[],'imaging');
+[data_path,file_exists] = lilrig_cortexlab_filename(animal,day,[],'imaging');
 dataSummary_fn = [data_path filesep 'dataSummary_blue'];
 load(dataSummary_fn);
 
@@ -28,7 +28,7 @@ for curr_exp_idx = 1:length(experiments)
     curr_exp = experiments(curr_exp_idx);
     
     % Load timeline
-    timeline_filename = AP_cortexlab_filename(animal,day,curr_exp,'timeline');
+    timeline_filename = lilrig_cortexlab_filename(animal,day,curr_exp,'timeline');
     load(timeline_filename);
     
     timeline_cam_idx = strcmp({Timeline.hw.inputs.name}, 'pcoExposure');
@@ -84,7 +84,7 @@ animal = ''; % animal name
 day = ''; % yyyy-mm-dd
 experiments = []; % all experiments run that day (e.g. [1,2,3,4])
 
-[data_path,file_exists] = AP_cortexlab_filename(animal,day,[],'imaging');
+[data_path,file_exists] = lilrig_cortexlab_filename(animal,day,[],'imaging');
 
 dataSummary_blue_fn = [data_path filesep 'dataSummary_blue'];
 dataSummary_blue = load(dataSummary_blue_fn);
@@ -102,7 +102,7 @@ for curr_exp_idx = 1:length(experiments)
     curr_exp = experiments(curr_exp_idx);
     
     % Load frame times
-    timeline_filename = AP_cortexlab_filename(animal,day,curr_exp,'timeline');
+    timeline_filename = lilrig_cortexlab_filename(animal,day,curr_exp,'timeline');
     load(timeline_filename);
     
     timeline_cam_idx = strcmp({Timeline.hw.inputs.name}, 'pcoExposure');

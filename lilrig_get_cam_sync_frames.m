@@ -1,5 +1,5 @@
-function [cam_sync_frames,n_frames] = AP_get_cam_sync_frames(fn,draw_roi)
-% cam_strobe_frames = AP_get_cam_strobe_frames(fn)
+function [cam_sync_frames,n_frames] = lilrig_get_cam_sync_frames(fn,draw_roi)
+% cam_strobe_frames = lilrig_get_cam_strobe_frames(fn)
 %
 % Get the frames for the onset of the sync strobes
 
